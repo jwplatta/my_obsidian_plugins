@@ -1,0 +1,11 @@
+{
+	"id": "openai-api",
+	"name": "OpenAI API",
+	"version": "1.0.0",
+	"minAppVersion": "0.0.0",
+	"description": "OpenAI API plugin for Obsidian with experiments using the API to help write.",
+	"author": "Joseph Platta",
+	"authorUrl": "",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}
