@@ -22,6 +22,7 @@ interface OpenAISettings {
 	topP: number;
 	frequencyPenalty: number;
 	presencePenalty: number;
+	dataFilePath: string;
 }
 
 interface Instruction {
@@ -38,6 +39,7 @@ const DEFAULT_SETTINGS: OpenAISettings = {
 	topP: 1,
 	frequencyPenalty: 0,
 	presencePenalty: 0,
+	dataFilePath: DATAFILE_PATH
 }
 
 export default class OpenAIPlugin extends Plugin {
@@ -337,6 +339,20 @@ class OpenAISettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.apiKey)
 				.onChange(async (value) => {
 					this.plugin.settings.apiKey = value;
+					await this.plugin.saveSettings();
+				})
+				.then((cb) => {
+					cb.inputEl.style.width = '100%';
+				}));
+
+		new Setting(containerEl)
+			.setName('Data File Path')
+			.setDesc('Enter the path to the data file for storing instructions.')
+			.addText(text => text
+				.setPlaceholder('Data File Path')
+				.setValue(this.plugin.settings.dataFilePath)
+				.onChange(async (value) => {
+					this.plugin.settings.dataFilePath = value;
 					await this.plugin.saveSettings();
 				})
 				.then((cb) => {
