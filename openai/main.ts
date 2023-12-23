@@ -139,9 +139,11 @@ class Completion {
 
 class InstructionsDataFile {
 	app: App;
+	settings: OpenAISettings;
 
-	constructor(app: App) {
+	constructor(app: App, settings: OpenAISettings) {
 		this.app = app;
+		this.settings = settings;
 	}
 
 	async findInstruction(instruction: string): Promise<void | Instruction> {
@@ -163,14 +165,14 @@ class InstructionsDataFile {
 
 		data['instructions'][instructionIndex] = instruction;
 
-		const file = this.app.vault.getAbstractFileByPath(DATAFILE_PATH);
+		const file = this.app.vault.getAbstractFileByPath(this.settings.dataFilePath);
 		if (file instanceof TFile) {
 			await this.app.vault.modify(file, JSON.stringify(data, null, 4));
 		}
 	}
 
 	async loadInstructions() {
-		const file = this.app.vault.getAbstractFileByPath(DATAFILE_PATH);
+		const file = this.app.vault.getAbstractFileByPath(this.settings.dataFilePath);
 		if (file instanceof TFile) {
 			const fileContent = await this.app.vault.read(file);
 			const data = JSON.parse(fileContent);
@@ -191,7 +193,7 @@ class InstructionsDataFile {
 			const data = await this.loadInstructions();
 			data['instructions'].push(instructionObj);
 
-			const file = this.app.vault.getAbstractFileByPath(DATAFILE_PATH);
+			const file = this.app.vault.getAbstractFileByPath(this.settings.dataFilePath);
 			if (file instanceof TFile) {
 				await this.app.vault.modify(file, JSON.stringify(data, null, 4));
 			}
@@ -236,7 +238,7 @@ class InstructionModal extends Modal {
 		if (view) {
 			const currentSelection = view.editor.getSelection();
 			let prompt = instruction;
-			const instructionsDataFile = new InstructionsDataFile(this.app);
+			const instructionsDataFile = new InstructionsDataFile(this.app, this.settings);
 			const instructionObj = await instructionsDataFile.findInstruction(instruction);
 
 			if (instructionObj) {
@@ -274,7 +276,7 @@ class FindInstructionModal extends SuggestModal<Instruction> {
 	}
 
 	async getSuggestions(query: string): Promise<Instruction[]> {
-		const instructionsDataFile = new InstructionsDataFile(this.app);
+		const instructionsDataFile = new InstructionsDataFile(this.app, this.settings);
 		const instructionsData = await instructionsDataFile.loadInstructions();
 		const sortedInstructions = instructionsData["instructions"].sort((a: Instruction, b: Instruction) =>
 			b.usageCount - a.usageCount
@@ -296,7 +298,7 @@ class FindInstructionModal extends SuggestModal<Instruction> {
 		if (view) {
 			const currentSelection = view.editor.getSelection();
 			let prompt = instruction.text;
-			const instructionsDataFile = new InstructionsDataFile(this.app);
+			const instructionsDataFile = new InstructionsDataFile(this.app, this.settings);
 			const instructionObj = await instructionsDataFile.findInstruction(instruction.text);
 
 			if (instructionObj) {
