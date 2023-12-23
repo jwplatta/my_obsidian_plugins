@@ -12,8 +12,6 @@ import {
 } from 'obsidian';
 import OpenAI from 'openai';
 
-const DATAFILE_PATH = '/data/instructions.json';
-
 interface OpenAISettings {
 	apiKey: string;
 	model: string;
@@ -22,6 +20,7 @@ interface OpenAISettings {
 	topP: number;
 	frequencyPenalty: number;
 	presencePenalty: number;
+	dataDir: string;
 	dataFilePath: string;
 }
 
@@ -39,7 +38,8 @@ const DEFAULT_SETTINGS: OpenAISettings = {
 	topP: 1,
 	frequencyPenalty: 0,
 	presencePenalty: 0,
-	dataFilePath: DATAFILE_PATH
+	dataDir: "Data",
+	dataFilePath: ""
 }
 
 export default class OpenAIPlugin extends Plugin {
@@ -48,22 +48,17 @@ export default class OpenAIPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		console.log(this.settings.apiKey);
-
 		const root = this.app.vault.getRoot().path;
-		const dataDirPath = `${root}data`;
+		const dataDirPath = `${root}${this.settings.dataDir}`;
 		const dataFolderExists = await this.app.vault.adapter.exists(dataDirPath);
 
 		if (!dataFolderExists) {
 			await this.app.vault.adapter.mkdir(dataDirPath);
 		}
 
-		const dataFilePath = `${dataDirPath}/instructions.json`;
-		console.log(dataFilePath);
-
-		const dataFileExists = await this.app.vault.adapter.exists(dataFilePath);
+		const dataFileExists = await this.app.vault.adapter.exists(this.settings.dataFilePath);
 		if (!dataFileExists) {
-			await this.app.vault.adapter.write(dataFilePath, "{'instructions': []}");
+			await this.app.vault.adapter.write(this.settings.dataFilePath, "{'instructions': []}");
 		}
 
 		const statusBarItemEl = this.addStatusBarItem();
