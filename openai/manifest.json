@@ -1,10 +1,10 @@
 {
 	"id": "openai-api",
-	"name": "openai-api",
+	"name": "OpenAI API",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "",
-	"author": "",
+	"description": "Simple interface to send instructions to the OpenAI API.",
+	"author": "Joseph Platta",
 	"authorUrl": "",
 	"fundingUrl": "",
 	"isDesktopOnly": false
