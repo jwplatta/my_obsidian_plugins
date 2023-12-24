@@ -352,8 +352,11 @@ class FindInstructionModal extends SuggestModal<Instruction> {
 				const completion = await new Completion(this.app, this.settings).post(prompt);
 
 				if (completion) {
-					view.editor.replaceSelection(completion);
+					view.editor.replaceSelection(currentSelection + "\n" + completion);
 				}
+			} else {
+				const completion = await new Completion(this.app, this.settings).post(prompt);
+				view.editor.replaceSelection(completion || "");
 			}
 		}
 	}
