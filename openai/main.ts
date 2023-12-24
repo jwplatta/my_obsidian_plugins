@@ -68,7 +68,15 @@ export default class OpenAIPlugin extends Plugin {
 			id: 'instruct',
 			name: 'Instruct',
 			callback: () => {
-				new InstructionModal(this.app, this.settings).open();
+				new InstructionModal(this.app, this.settings, false).open();
+			}
+		});
+
+		this.addCommand({
+			id: 'instruct-multiple',
+			name: 'Instruct - Multiple',
+			callback: () => {
+				new InstructionModal(this.app, this.settings, true).open();
 			}
 		});
 
@@ -76,11 +84,18 @@ export default class OpenAIPlugin extends Plugin {
 			id: 'find-instruction',
 			name: 'Find Instruction',
 			callback: () => {
-				new FindInstructionModal(this.app, this.settings).open();
+				new FindInstructionModal(this.app, this.settings, false).open();
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
+		this.addCommand({
+			id: 'find-instruction-multiple',
+			name: 'Find Instruction - Multiple',
+			callback: () => {
+				new FindInstructionModal(this.app, this.settings, true).open();
+			}
+		});
+
 		this.addSettingTab(new OpenAISettingTab(this.app, this));
 	}
 
@@ -129,7 +144,6 @@ class Completion {
 
 		return response.choices[0].message.content;
 	}
-
 }
 
 class InstructionsDataFile {
@@ -201,10 +215,12 @@ class InstructionsDataFile {
 class InstructionModal extends Modal {
 	instruction: string;
 	settings: OpenAISettings;
+	multiple: boolean;
 
-	constructor(app: App, settings: OpenAISettings) {
+	constructor(app: App, settings: OpenAISettings, multiple: boolean) {
 		super(app);
 		this.settings = settings;
+		this.multiple = multiple;
 	}
 
 	onOpen() {
@@ -243,15 +259,28 @@ class InstructionModal extends Modal {
 				await instructionsDataFile.appendInstruction(instruction);
 			}
 
-			if (currentSelection !== "") {
-				prompt = prompt + "\n\n###\n\n" + currentSelection;
-			}
-			const completion = await new Completion(this.app, this.settings).post(prompt);
+			if (currentSelection !== "" && this.multiple) {
+				const selectionChunks = currentSelection.split("\n");
+				const prompts = selectionChunks.map(chunk => prompt + "\n\n###\n\n" + chunk);
 
-			if (completion && currentSelection !== "") {
+				const completions = await Promise.all(prompts.map(p => new Completion(this.app, this.settings).post(p)));
+
+				let allCompletions = "";
+				for (let i = 0; i < prompts.length; i++) {
+					if (completions[i] && selectionChunks[i] !== "") {
+						allCompletions += selectionChunks[i] + "\n" + completions[i] + "\n\n";
+					} else if (completions[i]) {
+						allCompletions += completions[i];
+					}
+				}
+				view.editor.replaceSelection(allCompletions);
+			} else if (currentSelection !== "" && !this.multiple) {
+				prompt = prompt + "\n\n###\n\n" + currentSelection;
+				const completion = await new Completion(this.app, this.settings).post(prompt);
 				view.editor.replaceSelection(currentSelection + "\n" + completion);
-			} else if (completion) {
-				view.editor.replaceSelection(completion);
+			} else {
+				const completion = await new Completion(this.app, this.settings).post(prompt);
+				view.editor.replaceSelection(completion || "");
 			}
 		}
 	}
@@ -264,10 +293,12 @@ class InstructionModal extends Modal {
 
 class FindInstructionModal extends SuggestModal<Instruction> {
 	settings: OpenAISettings;
+	multiple: boolean;
 
-	constructor(app: App, settings: OpenAISettings) {
+	constructor(app: App, settings: OpenAISettings, multiple: boolean) {
 		super(app);
 		this.settings = settings;
+		this.multiple = multiple;
 	}
 
 	async getSuggestions(query: string): Promise<Instruction[]> {
@@ -301,15 +332,28 @@ class FindInstructionModal extends SuggestModal<Instruction> {
 				await instructionsDataFile.updateInstruction(instructionObj);
 			}
 
-			if (currentSelection !== "") {
-				prompt = prompt + "\n\n###\n\n" + currentSelection;
-			}
-			const completion = await new Completion(this.app, this.settings).post(prompt);
+			if (currentSelection !== "" && this.multiple) {
+				const selectionChunks = currentSelection.split("\n");
+				const prompts = selectionChunks.map(chunk => prompt + "\n\n###\n\n" + chunk);
+				const completions = await Promise.all(prompts.map(p => new Completion(this.app, this.settings).post(p)));
 
-			if (completion && currentSelection !== "") {
-				view.editor.replaceSelection(currentSelection + "\n" + completion);
-			} else if (completion) {
-				view.editor.replaceSelection(completion);
+				let allCompletions = "";
+				for (let i = 0; i < prompts.length; i++) {
+					if (completions[i] && selectionChunks[i] !== "") {
+						allCompletions += selectionChunks[i] + "\n" + completions[i] + "\n\n";
+					} else if (completions[i]) {
+						allCompletions += completions[i];
+					}
+				}
+
+				view.editor.replaceSelection(allCompletions);
+			} else if (currentSelection !== "" && !this.multiple) {
+				prompt = prompt + "\n\n###\n\n" + currentSelection;
+				const completion = await new Completion(this.app, this.settings).post(prompt);
+
+				if (completion) {
+					view.editor.replaceSelection(completion);
+				}
 			}
 		}
 	}
