@@ -17,7 +17,7 @@ if __name__ == "__main__":
     if os.path.exists(plugin_path):
         answer = input("Plugin already installed. Reinstall? (y/n): ")
         if answer != "y":
-            print("Exiting..")
+            print("Exiting.")
             exit(1)
     else:
         os.mkdir(plugin_path)
