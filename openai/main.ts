@@ -62,11 +62,12 @@ export default class OpenAIPlugin extends Plugin {
 		}
 
 		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		statusBarItemEl.setText('Open API Loaded');
 
 		this.addCommand({
 			id: 'instruct',
 			name: 'Instruct',
+			hotkeys: [{ modifiers: ["Mod"], key: "/" }],
 			callback: () => {
 				new InstructionModal(this.app, this.settings, false).open();
 			}
