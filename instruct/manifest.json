@@ -1,6 +1,6 @@
 {
-	"id": "openai-api",
-	"name": "OpenAI API",
+	"id": "instruct",
+	"name": "Instruct",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Simple interface to send instructions to the OpenAI API.",

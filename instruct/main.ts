@@ -12,7 +12,7 @@ import {
 } from 'obsidian';
 import OpenAI from 'openai';
 
-interface OpenAISettings {
+interface InstructSettings {
 	apiKey: string;
 	model: string;
 	temperature: number;
@@ -30,7 +30,7 @@ interface Instruction {
 	usageCount: number;
 }
 
-const DEFAULT_SETTINGS: OpenAISettings = {
+const DEFAULT_SETTINGS: InstructSettings = {
 	apiKey: "",
 	model: "gpt-3.5-turbo",
 	temperature: 1,
@@ -42,8 +42,8 @@ const DEFAULT_SETTINGS: OpenAISettings = {
 	dataFilePath: ""
 }
 
-export default class OpenAIPlugin extends Plugin {
-	settings: OpenAISettings;
+export default class InstructPlugin extends Plugin {
+	settings: InstructSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -97,7 +97,7 @@ export default class OpenAIPlugin extends Plugin {
 			}
 		});
 
-		this.addSettingTab(new OpenAISettingTab(this.app, this));
+		this.addSettingTab(new InstructSettingTab(this.app, this));
 	}
 
 	onunload() {
@@ -115,10 +115,10 @@ export default class OpenAIPlugin extends Plugin {
 
 class Completion {
 	app: App;
-	settings: OpenAISettings;
+	settings: InstructSettings;
 	openai: OpenAI;
 
-	constructor(app: App, settings: OpenAISettings) {
+	constructor(app: App, settings: InstructSettings) {
 		this.app = app;
 		this.settings = settings;
 		this.openai = new OpenAI({
@@ -149,9 +149,9 @@ class Completion {
 
 class InstructionsDataFile {
 	app: App;
-	settings: OpenAISettings;
+	settings: InstructSettings;
 
-	constructor(app: App, settings: OpenAISettings) {
+	constructor(app: App, settings: InstructSettings) {
 		this.app = app;
 		this.settings = settings;
 	}
@@ -215,10 +215,10 @@ class InstructionsDataFile {
 
 class InstructionModal extends Modal {
 	instruction: string;
-	settings: OpenAISettings;
+	settings: InstructSettings;
 	multiple: boolean;
 
-	constructor(app: App, settings: OpenAISettings, multiple: boolean) {
+	constructor(app: App, settings: InstructSettings, multiple: boolean) {
 		super(app);
 		this.settings = settings;
 		this.multiple = multiple;
@@ -293,10 +293,10 @@ class InstructionModal extends Modal {
 }
 
 class FindInstructionModal extends SuggestModal<Instruction> {
-	settings: OpenAISettings;
+	settings: InstructSettings;
 	multiple: boolean;
 
-	constructor(app: App, settings: OpenAISettings, multiple: boolean) {
+	constructor(app: App, settings: InstructSettings, multiple: boolean) {
 		super(app);
 		this.settings = settings;
 		this.multiple = multiple;
@@ -363,10 +363,10 @@ class FindInstructionModal extends SuggestModal<Instruction> {
 	}
 }
 
-class OpenAISettingTab extends PluginSettingTab {
-	plugin: OpenAIPlugin;
+class InstructSettingTab extends PluginSettingTab {
+	plugin: InstructPlugin;
 
-	constructor(app: App, plugin: OpenAIPlugin) {
+	constructor(app: App, plugin: InstructPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

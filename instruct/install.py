@@ -13,7 +13,7 @@ if __name__ == "__main__":
         print("Plugins path does not exist.")
         exit(1)
 
-    plugin_path = os.path.join(plugins_path, "openai")
+    plugin_path = os.path.join(plugins_path, "instruct")
     if os.path.exists(plugin_path):
         answer = input("Plugin already installed. Reinstall? (y/n): ")
         if answer != "y":
